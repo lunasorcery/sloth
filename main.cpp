@@ -37,24 +37,24 @@ int main(int argc, char** argv)
 	bool isInEscapeCode = false;
 	while ((c=getchar())!=-1)
 	{
-		putchar(c);
-
 		if (isInEscapeCode)
 		{
 			if (c != '[' && c >= 0x40 && c <= 0x7e)
 			{
 				isInEscapeCode = false;
 			}
-			continue;
 		}
 		else if (c == 0x1b)
 		{
 			isInEscapeCode = true;
-			continue;
+		}
+		else
+		{
+			std::this_thread::sleep_for(wait);
 		}
 
+		putchar(c);
 		fflush(stdout);
-		std::this_thread::sleep_for(wait);
 	}
 }
 
