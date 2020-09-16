@@ -4,6 +4,7 @@
 #include <cstring>
 #include <random>
 #include <thread>
+#include <cctype>
 
 struct mistake_type {
   enum mistake_mode {
@@ -68,6 +69,7 @@ private:
   std::uniform_int_distribution<std::mt19937::result_type> char_range{'a', 'z'};
   const dur_t base_interval;
   dur_t cur_interval;
+  dur_t additional_time{0};
   mistake_type mistake;
 
 public:
@@ -99,7 +101,8 @@ public:
 
   void next() {
     auto rand_val = range(gen);
-    cur_interval = base_interval + dur_t{rand_val};
+    cur_interval = base_interval + dur_t{rand_val} + additional_time;
+    additional_time = dur_t{0}; // reset additional time
     mistake.tick(gen);
   }
 
@@ -117,10 +120,14 @@ public:
     }
 
     case mistake_type::good: {
-      return getchar();
+        break; // using getchar
     }
     }
-    return getchar();
+    auto c = getchar();
+    if (isspace(c)) {
+        additional_time = dur_t{100};
+    }
+    return c;
   }
 };
 
@@ -142,7 +149,14 @@ int main(int argc, char **argv) {
       std::this_thread::sleep_for(randomizer.interval());
     }
 
-    putchar(c);
+    if (c == '\b') {
+        // we do this to clear the last char
+        putchar('\b');
+        putchar(' ');
+        putchar('\b');
+    } else {
+        putchar(c);
+    }
     fflush(stdout);
     randomizer.next();
   }
